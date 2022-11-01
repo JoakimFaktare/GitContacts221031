@@ -9,13 +9,42 @@ namespace dtp5_contacts_0
         class Person
         {
             public string persname, surname, phone, address, birthdate;
+            
+            public Person(bool ask = false) {
+            if (ask)
+                {
+                    Console.Write("personal name: ");
+                    persname = Console.ReadLine();
+                    Console.Write("surname: ");
+                    surname = Console.ReadLine();
+                    Console.Write("phone: ");
+                    phone = Console.ReadLine();
+                    Console.Write("adress: ");
+                    address = Console.ReadLine();
+                    Console.Write("birthdate: ");
+                    birthdate = Console.ReadLine();
+                }
+            }
+            public Person(string[] attrs)
+            {
+                persname = attrs[0];
+                surname = attrs[1];
+                string[] phones = attrs[2].Split(';');
+                phone = phones[0];
+                string[] addresses = attrs[3].Split(';');
+                address = addresses[0];
+                string[] birthdates = attrs[4].Split(';');
+                birthdate = birthdates[0];
+
+            }
+
         }
         public static void Main(string[] args)
         {
             string lastFileName = "address.lis";
             string[] commandLine;
             Console.WriteLine("Hello and welcome to the contact list");
-            helpCommands();
+            PrintHelp();
             do
             {
                 Console.Write($"> ");
@@ -59,29 +88,17 @@ namespace dtp5_contacts_0
                 {
                     if (commandLine.Length < 2)
                     {
-                        Person p = new Person();
-
-                        Console.Write("personal name: ");
-                        p.persname = Console.ReadLine();
-                        Console.Write("surname: ");
-                        p.surname = Console.ReadLine();
-                        Console.Write("phone: ");
-                        p.phone = Console.ReadLine();
-                        Console.Write("adress: ");
-                        p.address = Console.ReadLine();
-                        Console.Write("birthdate: ");
-                        p.birthdate = Console.ReadLine();
+                        Person p = new Person(ask: true);
                         InsertInToContactlist(p);
                     }
                     else
                     {
-                        // NYI!
                         Console.WriteLine("Not yet implemented: new /person/");
                     }
                 }
                 else if (commandLine[0] == "help")
                 {
-                    helpCommands();
+                    PrintHelp();
                 }
                 else
                 {
@@ -97,12 +114,12 @@ namespace dtp5_contacts_0
                 foreach (Person p in contactList)
                 {
                     if (p != null)
-                        outfile.WriteLine($"{p.persname};{p.surname};{p.phone};{p.address};{p.birthdate}");
+                        outfile.WriteLine($"{p.persname};{p.surname};{p.phone};{p.address};{p.birthdate};");
                 }
             }
         }
 
-        private static void helpCommands()  //Metdo för help funktion
+        private static void PrintHelp()  //Metdo för help funktion
         {
             Console.WriteLine("Avaliable commands: ");
             Console.WriteLine("  delete       - emtpy the contact list");
@@ -125,16 +142,8 @@ namespace dtp5_contacts_0
                 while ((line = infile.ReadLine()) != null) 
                 {
                     Console.WriteLine(line);
-                    string[] attrs = line.Split('|');
-                    Person p = new Person();
-                    p.persname = attrs[0];
-                    p.surname = attrs[1];
-                    string[] phones = attrs[2].Split(';');
-                    p.phone = phones[0];
-                    string[] addresses = attrs[3].Split(';');
-                    p.address = addresses[0];
-                    string[] birthdates = attrs[4].Split(';');
-                    p.birthdate = birthdates[0];
+                    string[] attrs = line.Split(';');
+                    Person p = new Person(attrs);
                     //FIXME 
                     InsertInToContactlist(p);
                 }
