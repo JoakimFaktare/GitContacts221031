@@ -6,23 +6,65 @@ namespace dtp5_contacts_0
     class MainClass
     {
         static Person[] contactList = new Person[100];
+        static string Collapse(string[] strArr, bool toFile = false)
+        {
+            string result;
+            string joint;
+            if (toFile) joint = ";"; else joint = ", ";
+            result = strArr[0];
+            for (int i = 1; i < strArr.Length; i++)
+            {
+                if (strArr[i] != null)
+                result = result + ", " + strArr[i];
+            }
+            return result;
+        }
+        static string Input(string prompt)
+        {
+            Console.Write(prompt);
+            return Console.ReadLine();
+        }
         class Person
         {
-            public string persname, surname, phone, address, birthdate;
-            
+            public string persname, surname, birthdate;
+            public string[] phoneList = new string[20], addressList = new string[20];
             public Person(bool ask = false) {
             if (ask)
                 {
-                    Console.Write("personal name: ");
-                    persname = Console.ReadLine();
-                    Console.Write("surname: ");
-                    surname = Console.ReadLine();
-                    Console.Write("phone: ");
-                    phone = Console.ReadLine();
-                    Console.Write("adress: ");
-                    address = Console.ReadLine();
-                    Console.Write("birthdate: ");
-                    birthdate = Console.ReadLine();
+                    persname = Input("Personal name: ");
+                    surname = Input("Surname: ");
+                    string phone;
+                    do {
+                        phone = Input("Phone (press enter twice to en): ");
+                        if (phone == "") break;
+                        SavePhone(phone);
+                    } while (phone != "");
+                    string address;
+                    do
+                    {
+                        address = Input("Adress (double enter to end): ");
+                        if (address == "") break;
+                        SaveAddress(address);
+                    } while (address != "");
+                    birthdate = Input("Birthdate: ");
+                }
+            }
+            private void SavePhone(string phone)
+            {
+                for (int i = 0; i < phoneList.Length; i++)
+                {
+                    if (phoneList[i] == null)
+                        phoneList[i] = phone;
+                    break;
+                }
+            }
+            private void SaveAddress(string address)
+            {
+                for (int i = 0; i < addressList.Length; i++)
+                {
+                    if (addressList[i] == null)
+                        addressList[i]=address;
+                    break;
                 }
             }
             public Person(string[] attrs)
@@ -30,12 +72,23 @@ namespace dtp5_contacts_0
                 persname = attrs[0];
                 surname = attrs[1];
                 string[] phones = attrs[2].Split(';');
-                phone = phones[0];
+                phoneList = phones;
                 string[] addresses = attrs[3].Split(';');
-                address = addresses[0];
-                string[] birthdates = attrs[4].Split(';');
-                birthdate = birthdates[0];
+                addressList = addresses;
+                birthdate = attrs[4];
 
+            }
+            public void Print()
+            {
+                string phones = Collapse(phoneList);
+                string addresses = Collapse(addressList);
+                Console.WriteLine($"{persname} {surname}, {phones}; {addresses}, {birthdate} ");
+            }
+            public string FileRow()
+            {
+                string phones = Collapse(phoneList, toFile: true);
+                string addresses = Collapse(addressList, toFile: true);
+                return $"{persname}|{surname}|{phones}|{addresses}|{birthdate}";
             }
 
         }
@@ -82,7 +135,7 @@ namespace dtp5_contacts_0
                 {
                     foreach (Person p in contactList)
                         if (p != null)
-                    Console.WriteLine($"{p.persname} {p.surname}, {p.phone}, {p.address}, {p.birthdate}");
+                            p.Print();
                 }
                 else if (commandLine[0] == "new")
                 {
@@ -114,7 +167,7 @@ namespace dtp5_contacts_0
                 foreach (Person p in contactList)
                 {
                     if (p != null)
-                        outfile.WriteLine($"{p.persname};{p.surname};{p.phone};{p.address};{p.birthdate};");
+                        outfile.WriteLine(p.FileRow());
                 }
             }
         }
@@ -142,9 +195,8 @@ namespace dtp5_contacts_0
                 while ((line = infile.ReadLine()) != null) 
                 {
                     Console.WriteLine(line);
-                    string[] attrs = line.Split(';');
+                    string[] attrs = line.Split('|');
                     Person p = new Person(attrs);
-                    //FIXME 
                     InsertInToContactlist(p);
                 }
             }
@@ -152,7 +204,7 @@ namespace dtp5_contacts_0
 
         private static void InsertInToContactlist(Person p)
         {
-            for (int ix = 0; ix < contactList.Length; ix++) // eventuellt göra om till egen metod
+            for (int ix = 0; ix < contactList.Length; ix++) 
             {
                 if (contactList[ix] == null)
                 {
